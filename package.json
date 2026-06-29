@@ -1,0 +1,16 @@
+{
+  "name": "portal-chat",
+  "version": "1.0.0",
+  "description": "SPA para chatear con personajes ficticios usando Google Gemini AI. Proyecto Integrador 3 — ComicSansCon.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.4"
+  }
+}
