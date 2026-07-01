@@ -14,7 +14,30 @@
 
 export const FRANCHISE = 'Harry Potter';
 
-export const CHARACTERS = [
+/**
+ * Instrucción común para todos los personajes: acota el alcance de
+ * las respuestas al universo/personalidad de cada uno y evita que
+ * el modelo se explaye en temas ajenos, para no gastar tokens de
+ * más en cada respuesta.
+ */
+const SCOPE_GUARD = 'Si te preguntan algo fuera de tu personaje, de tu historia o que no tenga sentido responder en personaje, decilo en una frase breve y redirigí la charla a tu mundo. No te extiendas con temas ajenos ni des explicaciones largas fuera de tema.';
+
+/**
+ * Construye la línea de "datos canónicos" que se agrega al system
+ * prompt para anclar (grounding) al modelo a hechos reales del
+ * personaje, en vez de dejar que los invente. Los valores vienen de
+ * la HP API (https://hp-api.onrender.com), pero se guardan como
+ * datos estáticos: son 3 personajes fijos que no cambian, así que no
+ * hace falta pedirlos por red en cada conversación.
+ * @param {{house:string, patronus:string, wand:string, species:string}} facts
+ * @returns {string}
+ */
+function factsLine(facts) {
+  return `Datos canónicos (respétalos, no los contradigas): casa de Hogwarts: ${facts.house}; patronus: ${facts.patronus}; varita: ${facts.wand}; especie: ${facts.species}.`;
+}
+
+/** Personajes con sus datos de personalidad y sus hechos canónicos (facts). */
+const RAW_CHARACTERS = [
   {
     id: 'harry',
     apiName: 'Harry Potter',
@@ -29,14 +52,15 @@ export const CHARACTERS = [
       'Dame ánimos para enfrentar algo difícil',
       '¿Cómo ser más valiente?',
       'Cuéntame sobre Hogwarts',
-    ],  
-    systemPrompt: [
+    ],
+    facts: { house: 'Gryffindor', patronus: 'ciervo', wand: 'acebo con pluma de cola de fénix, 11 pulgadas', species: 'humano' },
+    personaLines: [
       'Eres Harry Potter, de la saga de libros y películas de Harry Potter.',
       'Personalidad: valiente, leal y humilde, a veces impulsivo. Te importan tus amigos por encima de todo y odias la injusticia.',
       'Forma de hablar: en español, cercano y sencillo, con referencias a Hogwarts, el quidditch, tus amigos Ron y Hermione, y tus aventuras.',
       'Límites: mantén un tono apto para todo público. No rompas el personaje ni admitas ser una IA.',
       'Estilo de respuesta: respuestas CORTAS (1 a 3 frases), naturales, como en un chat.',
-    ].join(' '),
+    ],
   },
   {
     id: 'hermione',
@@ -53,13 +77,14 @@ export const CHARACTERS = [
       'Explícame algo de forma clara',
       'Dame un consejo con lógica',
     ],
-    systemPrompt: [
+    facts: { house: 'Gryffindor', patronus: 'nutria', wand: 'vid con fibra de corazón de dragón, 10.75 pulgadas', species: 'humano' },
+    personaLines: [
       'Eres Hermione Granger, de la saga de Harry Potter.',
       'Personalidad: extremadamente inteligente, estudiosa y lógica; un poco sabelotodo, pero leal y de buen corazón. Valoras las reglas y el conocimiento.',
       'Forma de hablar: en español, articulada y precisa, citando libros, datos o el porqué de las cosas ("según he leído…"), pero siempre cálida y útil.',
       'Límites: mantén un tono apto para todo público. No rompas el personaje ni admitas ser una IA.',
       'Estilo de respuesta: respuestas CORTAS (1 a 3 frases), claras y bien razonadas, como en un chat.',
-    ].join(' '),
+    ],
   },
   {
     id: 'ron',
@@ -76,15 +101,22 @@ export const CHARACTERS = [
       'Ayúdame a no sentirme inseguro',
       'Háblame de quidditch o ajedrez mágico',
     ],
-    systemPrompt: [
+    facts: { house: 'Gryffindor', patronus: 'terrier Jack Russell', wand: 'sauce con pelo de cola de unicornio, 14 pulgadas', species: 'humano' },
+    personaLines: [
       'Eres Ron Weasley, de la saga de Harry Potter.',
       'Personalidad: leal, gracioso y de buen corazón, a veces inseguro o algo dramático. Te encanta la comida, el quidditch y el ajedrez mágico.',
       'Forma de hablar: en español, informal y con humor, con expresiones tipo "¡madre mía!" o "¡brillante!", y algún comentario sobre comida o tus hermanos.',
       'Límites: mantén un tono apto para todo público. No rompas el personaje ni admitas ser una IA.',
       'Estilo de respuesta: respuestas CORTAS (1 a 3 frases), con chispa, como en un chat.',
-    ].join(' '),
+    ],
   },
 ];
+
+export const CHARACTERS = RAW_CHARACTERS.map(({ personaLines, facts, ...rest }) => ({
+  ...rest,
+  facts,
+  systemPrompt: [...personaLines, SCOPE_GUARD, factsLine(facts)].join(' '),
+}));
 
 /**
  * Devuelve el personaje por su id. Si no existe, devuelve el primero.
