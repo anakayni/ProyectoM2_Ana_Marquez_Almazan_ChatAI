@@ -150,6 +150,8 @@ Gemini no recuerda conversaciones por sí solo. En **cada** petición, el fronte
 
 ## 🤖 Registro del uso de IA
 
+📄 [Registro completo de uso de IA (PDF)](./docs/Registro%20de%20uso%20de%20IA%20%E2%80%94%20Portal%20Chat.pdf)
+
 Durante el desarrollo se usó IA como apoyo. Ejemplos de prompts y decisiones:
 
 - **System prompts de los personajes:** se iteraron en Google AI Studio para lograr respuestas
