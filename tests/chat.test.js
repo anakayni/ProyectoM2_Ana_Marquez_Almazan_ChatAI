@@ -5,7 +5,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { requestReply, demoReply } from '../src/chat.js';
 
-const character = { id: 'rick', name: 'Rick Sanchez' };
+const character = { id: 'harry', name: 'Harry Potter' };
 
 describe('requestReply', () => {
   it('devuelve el texto cuando la respuesta es 200 OK', async () => {
@@ -22,7 +22,7 @@ describe('requestReply', () => {
     expect(fetchImpl).toHaveBeenCalledOnce();
     // verifica que envía characterId y messages en el body
     const body = JSON.parse(fetchImpl.mock.calls[0][1].body);
-    expect(body.characterId).toBe('rick');
+    expect(body.characterId).toBe('harry');
     expect(body.messages).toHaveLength(1);
   });
 

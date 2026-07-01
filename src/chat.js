@@ -65,24 +65,24 @@ export function demoReply(character, userText) {
   const short = text.length > 60 ? text.slice(0, 57) + '…' : text;
 
   const byId = {
-    rick: [
-      `*eructo* ¿"${short}"? Pff, fácil. Pero no te voy a dar la versión completa, te explotaría el cerebro, Morty.`,
-      `Mira, lo de "${short}" tiene una respuesta obvia… para alguien con mi coeficiente. La corta: sí, y a la vez no.`,
-      `Aj, ${short ? 'eso' : 'nada'}. La ciencia no se trata de "por qué", se trata de "por qué no". Siguiente pregunta.`,
+    harry: [
+      `Sobre "${short}"… mira, no siempre tengo la respuesta, pero lo enfrentamos juntos. Como en Hogwarts.`,
+      `"${short}", ¿eh? A veces solo hay que ser valiente y dar el paso. Yo te cubro las espaldas.`,
+      `Vale, "${short}". Ron y Hermione dirían cosas distintas… pero yo creo que confíes en ti. Funciona.`,
     ],
-    morty: [
-      `Ah, e-este… ¿"${short}"? Vale, c-creo que puedo intentarlo, ¿okey? No te prometo nada, jeje.`,
-      `Uy, no sé si soy el indicado, pero… sobre "${short}", yo diría que respires y lo intentes paso a paso.`,
-      `M-mira, Rick diría algo súper complicado, pero yo creo que lo de "${short}" no es para tanto. ¿O sí?`,
+    hermione: [
+      `Según lo que he leído, "${short}" se resuelve mejor con un plan y algo de lógica. Te ayudo a ordenarlo.`,
+      `"${short}"? Honestamente, es cuestión de estudiarlo bien. Vamos por partes y verás que tiene sentido.`,
+      `Mira, sobre "${short}": la respuesta suele estar si buscas en el sitio correcto. Empecemos por lo básico.`,
     ],
-    summer: [
-      `Ok, mira, lo de "${short}" te lo resumo: hazlo con seguridad y nadie va a dudar de ti. En serio.`,
-      `"${short}"? Obvio que tengo opinión. La clave es actitud y un buen plan. Confía en mí.`,
-      `Honestamente, "${short}" es más simple de lo que crees. Yo lo haría con estilo y sin estrés.`,
+    ron: [
+      `¡Madre mía, "${short}"! Vale, tranquilo… seguro no es tan grave. ¿Lo hablamos con calma? Y quizá un sándwich.`,
+      `"${short}", ¿eh? ¡Brillante! Bueno, más o menos. Yo te digo lo que haría, aunque Hermione lo diría mejor.`,
+      `Eh, "${short}"… a mí también me pondría nervioso, pero eres más capaz de lo que crees. ¡En serio!`,
     ],
   };
 
-  const list = byId[character.id] || byId.rick;
+  const list = byId[character.id] || byId.harry;
   return list[Math.floor(Math.random() * list.length)];
 }
 

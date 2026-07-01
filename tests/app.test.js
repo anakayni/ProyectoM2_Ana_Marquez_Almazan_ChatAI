@@ -44,7 +44,7 @@ describe('pathForRoute', () => {
 
 describe('getCharacter', () => {
   it('devuelve el personaje correcto por id', () => {
-    expect(getCharacter('summer').name).toBe('Summer Smith');
+    expect(getCharacter('hermione').name).toBe('Hermione Granger');
   });
 
   it('devuelve el primer personaje si el id no existe', () => {
@@ -55,5 +55,10 @@ describe('getCharacter', () => {
     const prompts = CHARACTERS.map((c) => c.systemPrompt);
     prompts.forEach((p) => expect(p.length).toBeGreaterThan(20));
     expect(new Set(prompts).size).toBe(CHARACTERS.length);
+  });
+
+  it('cada personaje define apiName para la HP API', () => {
+    CHARACTERS.forEach((c) => expect(typeof c.apiName).toBe('string'));
+    expect(CHARACTERS.map((c) => c.id)).toContain('harry');
   });
 });

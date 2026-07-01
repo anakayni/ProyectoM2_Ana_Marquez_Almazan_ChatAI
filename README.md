@@ -19,9 +19,9 @@ actúa como proxy seguro.
 - **3 vistas con routing SPA** (History API): `/home`, `/chat`, `/about`. Funcionan los
   botones **atrás/adelante** del navegador (evento `popstate`).
 - **Galería de 3 personajes**, cada uno con su **system prompt único**:
-  - 🟢 **Rick Sanchez** — científico genial, sarcástico.
-  - 🟡 **Morty Smith** — aprendiz nervioso pero valiente.
-  - 🟣 **Summer Smith** — estratega con actitud.
+  - 🔴 **Harry Potter** — valiente y leal, el niño que vivió.
+  - 🟡 **Hermione Granger** — la bruja más brillante de su generación.
+  - 🟠 **Ron Weasley** — el mejor amigo, gracioso y de buen corazón.
 - **Diseño mobile-first** responsive con 3 breakpoints (móvil, tablet ≥640px, escritorio ≥1024px).
 - **Chat completo**: diferenciación visual usuario/personaje, estado "escribiendo…" animado,
   manejo de errores, scroll automático, **Enter para enviar** y **botón de copiar** respuestas.
@@ -50,10 +50,12 @@ portal-chat/
 │   ├── chat.js          # Comunicación con el backend + modo demo
 │   ├── router.js        # Routing puro (testeable)
 │   ├── utils.js         # Funciones puras: transform/parse/storage/time
+│   ├── hpapi.js         # Capa de datos de la HP API (fetch + parseo)
 │   └── characters.js    # Datos de personajes + system prompts
 ├── tests/
 │   ├── utils.test.js    # Tests de transformación y persistencia
 │   ├── chat.test.js     # Tests de fetch (mockeado) y modo demo
+│   ├── hpapi.test.js    # Tests de la HP API (parseo/búsqueda + fetch mock)
 │   └── app.test.js      # Tests de routing y personajes
 ├── index.html
 ├── vercel.json          # Rewrites para que el routing SPA funcione
@@ -164,6 +166,6 @@ _(Personaliza esta sección con tus prompts reales.)_
 
 ## 📝 Licencia / créditos
 
-Proyecto educativo. Las imágenes de avatar provienen de la
-[Rick and Morty API](https://rickandmortyapi.com/). Los personajes son propiedad de sus
+Proyecto educativo. Las imágenes y datos de los personajes provienen de la
+[HP API](https://hp-api.onrender.com/). Los personajes son propiedad de sus
 respectivos dueños; este proyecto es una práctica sin fines comerciales.

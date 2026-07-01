@@ -14,6 +14,7 @@ import {
 } from './utils.js';
 import { requestReply, demoReply } from './chat.js';
 import { parseRoute, pathForRoute } from './router.js';
+import { fetchAllCharacters, findCharacter } from './hpapi.js';
 
 /* ----------------------------- Iconos SVG ----------------------------- */
 const ICONS = {
@@ -42,20 +43,24 @@ const ROUTES = ['home', 'chat', 'about'];
 
 const state = {
   route: 'home',
-  characterId: 'rick',
+  characterId: 'harry',
   theme: 'light',
   messages: [],
   status: 'idle',   // 'idle' | 'loading' | 'error'
   error: '',
   demoMode: false,  // true cuando el backend no está disponible
   menuOpen: false,
+  // Datos traídos de la Disney API por personaje: id -> {status, image, films}
+  charData: {},
 };
 
 /* Preferencias persistentes (tema + último personaje). */
 try {
   const prefs = JSON.parse(localStorage.getItem('portal-chat:prefs') || '{}');
   if (prefs.theme) state.theme = prefs.theme;
-  if (prefs.characterId) state.characterId = prefs.characterId;
+  if (prefs.characterId && CHARACTERS.some((c) => c.id === prefs.characterId)) {
+    state.characterId = prefs.characterId;
+  }
 } catch (e) { /* noop */ }
 
 function savePrefs() {
@@ -67,6 +72,52 @@ function savePrefs() {
 }
 
 function character() { return getCharacter(state.characterId); }
+
+/* ----------------------------- Avatares (Disney API) ----------------------------- */
+
+/**
+ * Devuelve el HTML interno de un avatar: la imagen real de la Disney
+ * API si ya se cargó, o la inicial del personaje como respaldo.
+ * @param {object} c personaje
+ * @param {number} fontPx tamaño de la inicial de respaldo
+ */
+function avatarInner(c, fontPx) {
+  const data = state.charData[c.id];
+  const url = data && data.image ? data.image : '';
+  const initial = escapeHtml((c.name || '?').trim().charAt(0));
+  const loading = data && data.status === 'loading' ? ' loading' : '';
+  const fallback = `<span class="ava-fallback${loading}" style="background:${c.accent};font-size:${fontPx}px">${initial}</span>`;
+  const img = url
+    ? `<img src="${url}" alt="${escapeHtml(c.name)}" loading="lazy" onerror="this.remove()">`
+    : '';
+  return fallback + img;
+}
+
+/**
+ * Carga las imágenes/datos de los personajes desde la HP API.
+ * Hace UNA sola petición (lista completa) y busca a cada personaje
+ * por nombre. Maneja estados loading/success/error y re-renderiza
+ * sin pisar lo que el usuario esté escribiendo.
+ */
+async function loadCharacterData() {
+  CHARACTERS.forEach((c) => { state.charData[c.id] = { status: 'loading', image: '' }; });
+  render();
+
+  try {
+    const list = await fetchAllCharacters();
+    CHARACTERS.forEach((c) => {
+      const found = findCharacter(list, c.apiName);
+      state.charData[c.id] = found
+        ? { status: 'success', image: found.image, house: found.house, patronus: found.patronus, actor: found.actor }
+        : { status: 'error', image: '' };
+    });
+  } catch (e) {
+    CHARACTERS.forEach((c) => { state.charData[c.id] = { status: 'error', image: '' }; });
+  }
+
+  const el = document.activeElement;
+  if (!(el && el.id === 'chat-input' && el.value)) render();
+}
 
 /* ----------------------------- Routing (History API) ----------------------------- */
 
@@ -114,9 +165,9 @@ function navbarHTML() {
     </button>`;
   return `
     <header class="navbar">
-      <button class="brand" data-nav="home" aria-label="Portal Chat">
+      <button class="brand" data-nav="home" aria-label="ComicSansCon">
         <span class="brand-mark">${icon('portal', 20, 1.6)}</span>
-        <span class="brand-name">Portal&nbsp;Chat</span>
+        <span class="brand-name">ComicSansCon</span>
       </button>
       <nav class="nav-links" data-menu="${state.menuOpen ? 'open' : ''}">
         ${link('home', 'Inicio', 'home')}
@@ -141,8 +192,7 @@ function homeHTML() {
     return `
       <button class="char-card ${active ? 'active' : ''}" data-pick="${ch.id}"
         style="--c:${ch.accent};--c-rgb:${ch.accentRgb}">
-        <span class="char-avatar"><img src="${ch.avatar}" alt="${escapeHtml(ch.name)}"
-          onerror="this.style.display='none'"></span>
+        <span class="char-avatar">${avatarInner(ch, 26)}</span>
         <span class="char-info">
           <span class="char-name">${escapeHtml(ch.name)}</span>
           <span class="char-role">${escapeHtml(ch.role)}</span>
@@ -192,7 +242,7 @@ function messageHTML(m, c) {
   }
   return `
     <div class="msg ai">
-      <div class="msg-avatar"><img src="${c.avatar}" alt="" onerror="this.style.display='none'"></div>
+      <div class="msg-avatar">${avatarInner(c, 14)}</div>
       <div class="msg-body">
         <div class="msg-name">${escapeHtml(c.name)}</div>
         <div class="bubble">${escapeHtml(m.text)}</div>
@@ -209,7 +259,7 @@ function messageHTML(m, c) {
 function typingHTML(c) {
   return `
     <div class="msg ai" id="typing-row">
-      <div class="msg-avatar"><img src="${c.avatar}" alt="" onerror="this.style.display='none'"></div>
+      <div class="msg-avatar">${avatarInner(c, 14)}</div>
       <div class="msg-body">
         <div class="msg-name">${escapeHtml(c.name)}</div>
         <div class="bubble typing"><i></i><i></i><i></i></div>
@@ -223,7 +273,7 @@ function chatHTML() {
 
   const body = empty
     ? `<div class="chat-empty">
-         <div class="chat-empty-avatar"><img src="${c.avatar}" alt="" onerror="this.style.display='none'"></div>
+         <div class="chat-empty-avatar">${avatarInner(c, 34)}</div>
          <h2>${escapeHtml(c.greeting)}</h2>
          <div class="suggest-list">
            ${c.suggestions.map((s) => `<button class="suggest" data-send="${escapeHtml(s)}">${icon('spark', 15, 1.8)} ${escapeHtml(s)}</button>`).join('')}
@@ -246,7 +296,7 @@ function chatHTML() {
     <section class="view chat">
       <div class="chat-head" style="--accent:${c.accent};--accent-rgb:${c.accentRgb}">
         <div class="chat-head-l">
-          <div class="chat-head-avatar"><img src="${c.avatar}" alt="" onerror="this.style.display='none'"><span class="live"></span></div>
+          <div class="chat-head-avatar">${avatarInner(c, 18)}<span class="live"></span></div>
           <div>
             <div class="chat-head-name">${escapeHtml(c.name)}</div>
             <div class="chat-head-role">${escapeHtml(c.role)} · en línea</div>
@@ -287,8 +337,8 @@ function aboutHTML() {
           mediante inteligencia artificial.</p>
 
         <h2>El personaje</h2>
-        <p>Puedes chatear con tres personajes del universo de <i>Rick and Morty</i>, cada uno
-          con su propia personalidad definida mediante un <i>system prompt</i> único:</p>
+        <p>Puedes chatear con tres personajes de <i>Harry Potter</i> — Harry, Hermione y Ron —
+          cada uno con su propia personalidad definida mediante un <i>system prompt</i> único:</p>
         <ul class="about-list">${items}</ul>
 
         <h2>¿Cómo está hecho?</h2>
@@ -298,6 +348,8 @@ function aboutHTML() {
           <li><b>Diseño mobile-first</b> responsive con media queries (móvil, tablet y escritorio).</li>
           <li><b>Google Gemini</b> integrado de forma segura mediante una <b>Vercel Serverless Function</b>
             que actúa como proxy: la API key vive solo en el servidor.</li>
+          <li><b>Datos reales</b> de los personajes traídos de la <b>HP API</b>
+            (imágenes, casa, patronus) con estados de carga y manejo de errores.</li>
           <li><b>Historial</b> de conversación mantenido en la sesión y persistido en <code>localStorage</code>.</li>
           <li><b>Tests unitarios</b> con Vitest sobre las funciones de transformación y parseo.</li>
         </ul>
@@ -465,6 +517,8 @@ function init() {
   // Aseguramos una entrada en el history con la ruta actual.
   history.replaceState({ route: state.route }, '', pathForRoute(state.route));
   render();
+  // Traemos las imágenes/datos reales desde la HP API (async, con estados).
+  loadCharacterData();
 }
 
 init();
