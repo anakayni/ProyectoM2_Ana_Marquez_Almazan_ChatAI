@@ -5,7 +5,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx serve . --single",
+    "dev": "npm run dev:api",
+    "dev:api": "npx vercel dev",
+    "dev:static": "npx serve . --single",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
