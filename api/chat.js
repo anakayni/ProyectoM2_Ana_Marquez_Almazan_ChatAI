@@ -2,20 +2,19 @@
  * api/chat.js
  * -------------------------------------------------------------
  * Vercel Serverless Function que actúa como PROXY SEGURO entre
- * el frontend y la API de Google Gemini.
- *
- * El frontend NUNCA ve la API key: vive solo en el servidor,
- * en la variable de entorno GEMINI_API_KEY.
+ * el frontend y los proveedores de IA (Gemini, con Groq/Llama
+ * como respaldo si Gemini falla). Las API keys NUNCA llegan al
+ * frontend: viven solo en el servidor, en GEMINI_API_KEY y
+ * GROQ_API_KEY. Toda la lógica de orquestación y de límites de
+ * tokens vive en ../src/chatEngine.js para poder testearla.
  *
  * Flujo:
  *   frontend  --POST {messages, characterId}-->  esta función
- *   esta función  --POST (con API key)-->  Gemini
- *   Gemini  --respuesta-->  esta función  --{reply}-->  frontend
+ *   esta función  -->  chatEngine.getReply()  -->  Gemini o Groq
  * -------------------------------------------------------------
  */
 
-import { getCharacter } from '../src/characters.js';
-import { toGeminiContents, parseGeminiResponse } from '../src/utils.js';
+import { getReply } from '../src/chatEngine.js';
 
 export default async function handler(req, res) {
   // Solo aceptamos POST
@@ -25,51 +24,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages = [], characterId = 'rick' } = req.body || {};
+    const { messages = [], characterId = 'harry' } = req.body || {};
 
     if (!Array.isArray(messages) || messages.length === 0) {
       res.status(400).json({ error: 'Faltan los mensajes de la conversación.' });
       return;
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      res.status(500).json({ error: 'El servidor no tiene configurada GEMINI_API_KEY.' });
-      return;
-    }
-
-    const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
-    const character = getCharacter(characterId);
-
-    // Construimos el cuerpo para Gemini: system prompt + todo el historial.
-    const body = {
-      systemInstruction: { parts: [{ text: character.systemPrompt }] },
-      contents: toGeminiContents(messages),
-      generationConfig: {
-        temperature: 0.9,
-        topP: 0.95,
-        maxOutputTokens: 220,
-      },
-    };
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-    const geminiRes = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (!geminiRes.ok) {
-      const detail = await geminiRes.text().catch(() => '');
-      res.status(502).json({ error: 'Error al comunicarse con Gemini.', detail });
-      return;
-    }
-
-    const data = await geminiRes.json();
-    const reply = parseGeminiResponse(data);
-
-    res.status(200).json({ reply, characterId: character.id });
+    const result = await getReply({ messages, characterId });
+    res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Error interno del servidor.' });
+    res.status(err.status || 500).json({ error: err.message || 'Error interno del servidor.', detail: err.detail });
   }
 }
