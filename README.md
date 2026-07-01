@@ -9,7 +9,12 @@ actúa como proxy seguro.
 
 > 🔗 **Demo desplegada:** https://chat-with-ai-character-gemini.vercel.app/chat
 
-![Captura de Portal Chat](./docs/screenshot.png)
+![Captura de Portal Chat]
+<img width="1382" height="812" alt="chat_personajes_harry_potter" src="https://github.com/user-attachments/assets/ac2067b7-fc76-4dbc-ad04-d7593cb2477f" />
+
+<img width="1390" height="812" alt="interior_chat" src="https://github.com/user-attachments/assets/46a093a3-ef2a-4e79-ab79-0a5b98524941" />
+
+
 <!-- Añade tus capturas reales en una carpeta /docs -->
 
 ---
