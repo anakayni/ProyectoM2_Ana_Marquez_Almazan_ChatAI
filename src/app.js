@@ -90,7 +90,7 @@ function avatarInner(c, fontPx) {
   const img = url
     ? `<img src="${url}" alt="${escapeHtml(c.name)}" loading="lazy" onerror="this.remove()">`
     : '';
-  return fallback + img;
+  return url ? img : fallback;
 }
 
 /**
