@@ -29,7 +29,7 @@ export const CHARACTERS = [
       'Dame ánimos para enfrentar algo difícil',
       '¿Cómo ser más valiente?',
       'Cuéntame sobre Hogwarts',
-    ],
+    ],  
     systemPrompt: [
       'Eres Harry Potter, de la saga de libros y películas de Harry Potter.',
       'Personalidad: valiente, leal y humilde, a veces impulsivo. Te importan tus amigos por encima de todo y odias la injusticia.',
