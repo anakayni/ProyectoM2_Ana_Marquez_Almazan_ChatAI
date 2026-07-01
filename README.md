@@ -11,7 +11,6 @@ actúa como proxy seguro.
 
 ![Captura de Portal Chat](./docs/chat_personajes_harry_potter.png)
 ![Interior del chat](./docs/interior_chat.png)
-<!-- Añade tus capturas reales en una carpeta /docs -->
 
 ---
 
