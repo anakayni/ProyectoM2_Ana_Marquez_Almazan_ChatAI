@@ -7,7 +7,7 @@ Construida con **HTML, CSS y JavaScript puro (sin frameworks)**. La clave de API
 Gemini nunca se expone en el cliente: vive en una **Vercel Serverless Function** que
 actúa como proxy seguro.
 
-> 🔗 **Demo desplegada:** _añade aquí la URL pública de Vercel_
+> 🔗 **Demo desplegada:** https://chat-with-ai-character-gemini.vercel.app/chat
 
 ![Captura de Portal Chat](./docs/screenshot.png)
 <!-- Añade tus capturas reales en una carpeta /docs -->
